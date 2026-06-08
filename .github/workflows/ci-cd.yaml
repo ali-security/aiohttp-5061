@@ -16,15 +16,15 @@ name: CI/CD
 #   aiohttp-3.0.8-cp36-cp36m-macosx_10_{11,12}_x86_64.whl
 #
 # Caveat: Python 3.5 / 3.6 are EOL. actions/setup-python still publishes
-# them, but only on x86_64 runner images (ubuntu-*, windows-*, macos-13).
+# them, but only on x86_64 runner images (ubuntu-*, windows-*, macos-14).
 # Apple Silicon runners (macos-14+) cannot host them.
 
 on:
   push:
-    branches: [master]
-    tags: ['v*', '[0-9]+.[0-9]+.[0-9]+']
+    branches: [master, main]
+    tags: [v*, '[0-9]+.[0-9]+.[0-9]+']
   pull_request:
-    branches: [master]
+    branches: [master, main]
   workflow_dispatch:
 
 concurrency:
@@ -39,7 +39,7 @@ env:
 jobs:
   # ---------------------------------------------------------------------------
   # Linux tests. Python 3.5/3.6 were dropped from actions/setup-python on
-  # ubuntu-22.04 and ubuntu-20.04 is retired, so the tests run inside the
+  # ubuntu-22.04 and ubuntu-22.04 is retired, so the tests run inside the
   # official python:3.5 / python:3.6 Docker images. Those base on Debian
   # Stretch (glibc 2.24), which can't run Node 20 — hence checkout@v3
   # (Node 16) is pinned.
@@ -121,7 +121,7 @@ jobs:
       - name: Strip CRLF from hashed test fixtures
         shell: bash
         run: tr -d '\r' < tests/data.unknown_mime_type > tests/data.unknown_mime_type.lf && mv tests/data.unknown_mime_type.lf tests/data.unknown_mime_type
-      - uses: actions/setup-python@v5
+      - uses: MatteoH2O1999/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
           architecture: ${{ matrix.architecture }}
@@ -158,7 +158,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: MatteoH2O1999/setup-python@v4
         with:
           # Sdist generation doesn't depend on the build interpreter version;
           # any modern Python that satisfies setup.py's >=3.5.3 check works.
@@ -241,7 +241,7 @@ jobs:
             msvc-arch: amd64
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: MatteoH2O1999/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
           architecture: ${{ matrix.architecture }}
@@ -272,12 +272,12 @@ jobs:
   # ---------------------------------------------------------------------------
   # macOS wheels (Travis: osx_pypi_deploy_base_10{10,11,12}).
   # Platform tag is driven by MACOSX_DEPLOYMENT_TARGET, not the runner OS,
-  # so a single macos-13 (Intel) image produces all 5 wheels.
+  # so a single macos-14 (Intel) image produces all 5 wheels.
   # macos-14+ (Apple Silicon) can't host Python 3.5/3.6.
   # Produces: cp35 × {10.10, 10.11, 10.12} + cp36 × {10.11, 10.12} = 5 wheels.
   # ---------------------------------------------------------------------------
   # build-macos:
-  #   runs-on: macos-13
+  #   runs-on: macos-14
   #   strategy:
   #     fail-fast: false
   #     matrix:
@@ -299,7 +299,7 @@ jobs:
   #           plat-tag: '10_12'
   #   steps:
   #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-python@v5
+  #     - uses: MatteoH2O1999/setup-python@v4
   #       with:
   #         python-version: ${{ matrix.python-version }}
   #     - run: python -m pip install -U pip wheel setuptools
